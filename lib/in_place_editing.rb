@@ -1,28 +1,8 @@
-module InPlaceEditing
-  def self.included(base)
-    base.extend(ClassMethods)
-  end
+require File.expand_path('../in_place_editing/controller_methods', __FILE__)
+require File.expand_path('../in_place_editing/helper_methods', __FILE__)
 
-  # Example:
-  #
-  #   # Controller
-  #   class BlogController < ApplicationController
-  #     in_place_edit_for :post, :title
-  #   end
-  #
-  #   # View
-  #   <%= in_place_editor_field :post, 'title' %>
-  #
-  module ClassMethods
-    def in_place_edit_for(object, attribute, options = {})
-      define_method("set_#{object}_#{attribute}") do
-        unless [:post, :put].include?(request.method) then
-          return render(:text => 'Method not allowed', :status => 405)
-        end
-        @item = object.to_s.camelize.constantize.find(params[:id])
-        @item.update_attribute(attribute, params[:value])
-        render :text => CGI::escapeHTML(@item.send(attribute).to_s)
-      end
-    end
-  end
+
+if defined? ActionController
+  ActionController::Base.send :include, InPlaceEditing
+  ActionController::Base.helper InPlaceMacrosHelper
 end

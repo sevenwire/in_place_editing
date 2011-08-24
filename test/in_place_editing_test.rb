@@ -1,24 +1,28 @@
 require File.expand_path(File.dirname(__FILE__) + "/test_helper")
 
+class InPlaceEditingController < AbstractController::Base; end
+
 class InPlaceEditingTest < Test::Unit::TestCase
   include InPlaceEditing
   include InPlaceMacrosHelper
   
   include ActionView::Helpers::UrlHelper
   include ActionView::Helpers::TagHelper
+  include ActionView::Helpers::JavaScriptHelper
   include ActionView::Helpers::TextHelper
   include ActionView::Helpers::FormHelper
   include ActionView::Helpers::CaptureHelper
+  include ActionDispatch::Assertions::DomAssertions
   
   def setup
-    @controller = Class.new do
-      def url_for(options)
-        url =  "http://www.example.com/"
-        url << options[:action].to_s if options and options[:action]
-        url
-      end
+    def url_for(options)
+      url =  "http://www.example.com/"
+      url << options[:action].to_s if options and options[:action]
+      url
     end
-    @controller = @controller.new
+
+
+    @controller = InPlaceEditingController.new
     @protect_against_forgery = false
   end
 
