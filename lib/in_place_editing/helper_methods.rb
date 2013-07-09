@@ -14,6 +14,8 @@ module InPlaceMacrosHelper
   # the server should process the value and return the updated value in the body of
   # the reponse. The element will automatically be updated with the changed value
   # (as returned from the server).
+  #
+  # options with (Must be a function) means that you must pass a string like: function(transport, element) {what_to_do()}
   # 
   # Required +options+ are:
   # <tt>:url</tt>::       Specifies the url where the updated value should
@@ -34,6 +36,8 @@ module InPlaceMacrosHelper
   #                               in the AJAX call, +form+ is an implicit parameter
   # <tt>:script</tt>::            Instructs the in-place editor to evaluate the remote JavaScript response (default: false)
   # <tt>:click_to_edit_text</tt>::The text shown during mouseover the editable text (default: "Click to edit")
+  # <tt>:on_complete</tt>::       (Must be a function)Code run if update successful with server. Also if user cancels the form (see https://prototype.lighthouseapp.com/projects/8887/tickets/243).
+  # <tt>:on_failure</tt>::        (Must be a function)Code run if update failed with server
   def in_place_editor(field_id, options = {})
     function =  "new Ajax.InPlaceEditor("
     function << "'#{field_id}', "
@@ -60,8 +64,8 @@ module InPlaceMacrosHelper
     js_options['callback']   = "function(form) { return #{options[:with]} }" if options[:with]
     js_options['clickToEditText'] = %('#{options[:click_to_edit_text]}') if options[:click_to_edit_text]
     js_options['textBetweenControls'] = %('#{options[:text_between_controls]}') if options[:text_between_controls]
-    js_options['onComplete'] = %('#{options[:on_complete]}') if options[:on_complete]
-    js_options['onFailure'] = %('#{options[:on_failure]}') if options[:on_failure]
+    js_options['onComplete'] = %(#{options[:on_complete]}) if options[:on_complete]
+    js_options['onFailure'] = %(#{options[:on_failure]}) if options[:on_failure]
     function << (', ' + options_for_javascript(js_options)) unless js_options.empty?
     
     function << ')'
