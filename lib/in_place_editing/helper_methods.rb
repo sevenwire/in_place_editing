@@ -39,6 +39,7 @@ module InPlaceMacrosHelper
   # <tt>:on_complete</tt>::             (Must be a function)Code run if update successful with server. Also if user cancels the form (see https://prototype.lighthouseapp.com/projects/8887/tickets/243).
   # <tt>:on_failure</tt>::              (Must be a function)Code run if update failed with server
   # <tt>:keep_javascript_variable</tt>::If true, a var will be created for the editor: "#{field_id.gsub('-','_')}_editor"
+  # <tt>:raw_options</tt>::             Hash to specify additionnal options for InPlaceEditor. No processing on keys/values will be done (other than stringify_keys)
   def in_place_editor(field_id, options = {})
     if options[:keep_javascript_variable]
       function =  "var #{field_id.gsub('-','_')}_editor = new Ajax.InPlaceEditor("
@@ -71,6 +72,8 @@ module InPlaceMacrosHelper
     js_options['textBetweenControls'] = %('#{options[:text_between_controls]}') if options[:text_between_controls]
     js_options['onComplete'] = %(#{options[:on_complete]}) if options[:on_complete]
     js_options['onFailure'] = %(#{options[:on_failure]}) if options[:on_failure]
+    js_options.merge!(options[:raw_options].stringify_keys) if options[:raw_options]
+
     function << (', ' + options_for_javascript(js_options)) unless js_options.empty?
     
     function << ')'
