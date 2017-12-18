@@ -6,13 +6,8 @@ class InPlaceEditingTest < Test::Unit::TestCase
   include InPlaceEditing
   include InPlaceMacrosHelper
   
-  include ActionView::Helpers::UrlHelper
-  include ActionView::Helpers::TagHelper
   include ActionView::Helpers::JavaScriptHelper
-  include ActionView::Helpers::TextHelper
   include ActionView::Helpers::FormHelper
-  include ActionView::Helpers::CaptureHelper
-  include ActionDispatch::Assertions::DomAssertions
   
   def setup
     def url_for(options)
