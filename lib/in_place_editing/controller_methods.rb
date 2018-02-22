@@ -17,11 +17,11 @@ module InPlaceEditing
     def in_place_edit_for(object, attribute, options = {})
       define_method("set_#{object}_#{attribute}") do
         unless request.post? or request.put? then
-          return render(:text => 'Method not allowed', :status => 405)
+          return render(:plain => 'Method not allowed', :status => 405)
         end
         @item = object.to_s.camelize.constantize.find(params[:id])
         @item.update_attribute(attribute, params[:value])
-        render :text => CGI::escapeHTML(@item.send(attribute).to_s)
+        render :plain => CGI::escapeHTML(@item.send(attribute).to_s)
       end
     end
   end
