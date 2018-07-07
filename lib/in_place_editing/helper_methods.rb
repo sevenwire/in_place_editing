@@ -99,7 +99,6 @@ module InPlaceMacrosHelper
       content = instance_tag.object.public_send(method.to_s)
     end
 
-    instance_tag = ::ActionView::Helpers::InstanceTag.new(object_name, method, self, object)
     tag_options = { tag: 'span',
                     id: "#{object_name}_#{method}_#{instance_tag.object.id}_in_place_editor",
                     class: 'in_place_editor_field' }.merge!(tag_options)
