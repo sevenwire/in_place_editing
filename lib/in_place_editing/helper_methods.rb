@@ -9,18 +9,18 @@ module InPlaceMacrosHelper
   #     <input type="submit" value="ok"/>
   #     <a onclick="javascript to cancel the editing">cancel</a>
   #   </form>
-  # 
+  #
   # The form is serialized and sent to the server using an AJAX call, the action on
   # the server should process the value and return the updated value in the body of
   # the reponse. The element will automatically be updated with the changed value
   # (as returned from the server).
   #
   # options with (Must be a function) means that you must pass a string like: function(transport, element) {what_to_do()}
-  # 
+  #
   # Required +options+ are:
   # <tt>:url</tt>::       Specifies the url where the updated value should
   #                       be sent after the user presses "ok".
-  # 
+  #
   # Addtional +options+ are:
   # <tt>:rows</tt>::                    Number of rows (more than 1 will use a TEXTAREA)
   # <tt>:cols</tt>::                    Number of characters the text input should span (works for both INPUT and TEXTAREA)
@@ -41,18 +41,18 @@ module InPlaceMacrosHelper
   # <tt>:keep_javascript_variable</tt>::If true, a var will be created for the editor: "#{field_id.gsub('-','_')}_editor"
   # <tt>:raw_options</tt>::             Hash to specify additionnal options for InPlaceEditor. No processing on keys/values will be done (other than stringify_keys)
   def in_place_editor(field_id, options = {})
-    if options[:keep_javascript_variable]
-      function =  "var #{field_id.gsub('-','_')}_editor = new Ajax.InPlaceEditor("
-    else
-      function =  "new Ajax.InPlaceEditor("
-    end
+    function = if options[:keep_javascript_variable]
+                 "var #{field_id.tr('-', '_')}_editor = new Ajax.InPlaceEditor("
+               else
+                 'new Ajax.InPlaceEditor('
+               end
     function << "'#{field_id}', "
     function << "'#{url_for(options[:url])}'"
 
     js_options = {}
 
     if protect_against_forgery?
-      options[:with] ||= "Form.serialize(form)"
+      options[:with] ||= 'Form.serialize(form)'
       options[:with] += " + '&authenticity_token=' + encodeURIComponent('#{form_authenticity_token}')"
     end
 
@@ -64,23 +64,23 @@ module InPlaceMacrosHelper
     js_options['cols'] = options[:cols] if options[:cols]
     js_options['size'] = options[:size] if options[:size]
     js_options['externalControl'] = "'#{options[:external_control]}'" if options[:external_control]
-    js_options['loadTextURL'] = "'#{url_for(options[:load_text_url])}'" if options[:load_text_url]        
+    js_options['loadTextURL'] = "'#{url_for(options[:load_text_url])}'" if options[:load_text_url]
     js_options['ajaxOptions'] = options[:options] if options[:options]
     js_options['htmlResponse'] = !options[:script] if options[:script]
-    js_options['callback']   = "function(form) { return #{options[:with]} }" if options[:with]
+    js_options['callback'] = "function(form) { return #{options[:with]} }" if options[:with]
     js_options['clickToEditText'] = %('#{options[:click_to_edit_text]}') if options[:click_to_edit_text]
     js_options['textBetweenControls'] = %('#{options[:text_between_controls]}') if options[:text_between_controls]
-    js_options['onComplete'] = %(#{options[:on_complete]}) if options[:on_complete]
-    js_options['onFailure'] = %(#{options[:on_failure]}) if options[:on_failure]
+    js_options['onComplete'] = (options[:on_complete]).to_s if options[:on_complete]
+    js_options['onFailure'] = (options[:on_failure]).to_s if options[:on_failure]
     js_options.merge!(options[:raw_options].stringify_keys) if options[:raw_options]
 
     function << (', ' + options_for_javascript(js_options)) unless js_options.empty?
-    
+
     function << ')'
 
     javascript_tag(function)
   end
-  
+
   # Renders the value of the specified object and method with in-place editing capabilities.
   def in_place_editor_field(object_or_name, method, tag_options = {}, in_place_editor_options = {})
     if object_or_name.respond_to? :to_model
@@ -91,12 +91,19 @@ module InPlaceMacrosHelper
       object = nil
     end
 
-    instance_tag = ::ActionView::Helpers::InstanceTag.new(object_name, method, self, object)
-    tag_options = {:tag => "span",
-                   :id => "#{object_name}_#{method}_#{instance_tag.object.id}_in_place_editor",
-                   :class => "in_place_editor_field"}.merge!(tag_options)
-    in_place_editor_options[:url] = in_place_editor_options[:url] || url_for({ :action => "set_#{object_name}_#{method}", :id => instance_tag.object.id })
-    tag = content_tag(tag_options.delete(:tag), h(instance_tag.value(instance_tag.object)),tag_options)
-    return tag + in_place_editor(tag_options[:id], in_place_editor_options)
+    if defined?(ActionView::Base::InstanceTag)
+      instance_tag = ::ActionView::Helpers::InstanceTag.new(object_name, method, self, object)
+      content = instance_tag.value(instance_tag.object)
+    else
+      instance_tag = ActionView::Helpers::Tags::TextField.new(object_name, method, self, object || {})
+      content = instance_tag.object.public_send(method.to_s)
+    end
+
+    tag_options = { tag: 'span',
+                    id: "#{object_name}_#{method}_#{instance_tag.object.id}_in_place_editor",
+                    class: 'in_place_editor_field' }.merge!(tag_options)
+    in_place_editor_options[:url] = in_place_editor_options[:url] || url_for(action: "set_#{object_name}_#{method}", id: instance_tag.object.id)
+    tag = content_tag(tag_options.delete(:tag), h(content), tag_options)
+    tag + in_place_editor(tag_options[:id], in_place_editor_options)
   end
 end
