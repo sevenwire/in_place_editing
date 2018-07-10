@@ -70,8 +70,14 @@ module InPlaceMacrosHelper
     js_options['callback'] = "function(form) { return #{options[:with]} }" if options[:with]
     js_options['clickToEditText'] = %('#{options[:click_to_edit_text]}') if options[:click_to_edit_text]
     js_options['textBetweenControls'] = %('#{options[:text_between_controls]}') if options[:text_between_controls]
-    js_options['onComplete'] = (options[:on_complete]).to_s if options[:on_complete]
-    js_options['onFailure'] = (options[:on_failure]).to_s if options[:on_failure]
+    js_options['externalControlOnly'] = "true" if options[:external_control_only]
+    js_options['highlightcolor'] = %('#{options[:highlight_color]}') if options[:highlight_color]
+    js_options['highlightendcolor'] = %('#{options[:highlight_end_color]}') if options[:highlight_end_color]
+    js_options['onFailure'] = "function(element, transport) { #{options[:failure]} }" if options[:failure]
+    js_options['onComplete'] = "function(transport, element) { #{options[:complete]} }" if options[:complete]
+    js_options['onEnterEditMode'] = "function(element) { #{options[:enter_editing]} }" if options[:enter_editing]
+    js_options['onLeaveEditMode'] = "function(element) { #{options[:exit_editing]} }" if options[:exit_editing]
+    js_options['okControl'] = %('#{options[:save_control_type]}') if options[:save_control_type]
     js_options.merge!(options[:raw_options].stringify_keys) if options[:raw_options]
 
     function << (', ' + options_for_javascript(js_options)) unless js_options.empty?
